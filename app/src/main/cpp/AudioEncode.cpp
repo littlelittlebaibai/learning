@@ -33,10 +33,11 @@ static int select_sampel_rate(const AVCodec *codec){
 
 static int select_channel_layout(const AVCodec *codec,AVChannelLayout *dst){
     //AVCahnnelLayout 多声道的布局和顺序
-    const AVChannelLayout *p,*best_ch_layout;
+    const AVChannelLayout *p,*best_ch_layout,*src;
+    //src = &(AVChannelLayout)AV_CHANNEL_LAYOUT_STEREO;
     int best_nb_channels = 0;
     if(!codec->ch_layouts)
-        return av_channel_layout_copy(dst, &(AVChannelLayout)AV_CHANNEL_LAYOUT_STEREO);
+        return av_channel_layout_copy(dst, src);
     p = codec->ch_layouts;
     while (p->nb_channels){
         int nb_channels = p->nb_channels;
@@ -58,7 +59,11 @@ AudioEncode::~AudioEncode() {
 
 }
 
-AudioEncode::AudioEncode() {}
+AudioEncode::AudioEncode() {
+    tmp = fopen(tmpfilename, "wb");
+    tmp1 = fopen(tmp1filename, "wb");
+
+}
 
 int AudioEncode::initEncoder() {
     codec = avcodec_find_encoder(AV_CODEC_ID_MP2);
@@ -81,13 +86,18 @@ int AudioEncode::initEncoder() {
         return -2;
     }
 
-    c->sample_rate = select_sampel_rate(codec);
+    c->codec = codec;
+    c->sample_rate = 44100;//sampe rate ,channel ,format与输入数据对应
+    c->channels = 2;
+    c->channel_layout= AV_CH_LAYOUT_STEREO;//av_get_default_channel_layout(c->channels);
+    c->codec_type = AVMEDIA_TYPE_AUDIO;
 
-    ret = select_channel_layout(codec,&c->ch_layout);
-    if(ret<0) return -3;
+//    ret = select_channel_layout(codec,&c->ch_layout);
+//    if(ret<0) return -3;
 
     //编码的时候avcodec_open2会设置frame_size
-    if(avcodec_open2(c,codec,NULL) < 0){
+    int ret = avcodec_open2(c,codec,NULL);
+    if(ret < 0){
         fprintf(stderr,"could not open codec \n");
         return -4;
     }
@@ -123,19 +133,35 @@ int AudioEncode::initEncoder() {
         fprintf(stderr,"could not allocate auio data");
     }
     //至此，准备工作完毕，下面需要将采集进来的数据做编码
-
-
-
-
+//    t = 0;
+//    tincr = 2 * M_PI * 440.0 / c->sample_rate;
+//    for (i = 0; i < 200; i++) {
+//        /* make sure the frame is writable -- makes a copy if the encoder
+//         * kept a reference internally */
+//        ret = av_frame_make_writable(frame);
+//        if (ret < 0)
+//            exit(1);
+//        samples = (uint16_t*)frame->data[0];
+//
+//        for (j = 0; j < c->frame_size; j++) {
+//            samples[2*j] = (int)(sin(t) * 10000);
+//
+//            for (k = 1; k < c->ch_layout.nb_channels; k++)
+//                samples[2*j + k] = samples[2*j];//声道copy
+//            t += tincr;
+//        }
+//       // encodeFrames(c, frame, pkt, f);
+//    }
 
 
     return 0;
 }
 
-int AudioEncode::sendSamples(short * samples_) {
-    int ret = av_frame_make_writable(frame);
-    samples = (uint16_t*)frame->data[0];
-    samples = reinterpret_cast<uint16_t *>(samples_);//将实际samples的数据放进frame中
+int AudioEncode::sendSamples(uint16_t  * samples_) {
+    int ret = av_frame_make_writable(frame);//frame没有初始化
+   // fwrite(samples_,1,4096,tmp1);
+    memcpy(frame->data[0],samples_,4096);
+  //  fwrite(frame->data[0],1,4096,tmp);
     encodeFrames(c,frame,pkt,f);
 
 
@@ -157,7 +183,7 @@ int AudioEncode::encodeFrames(AVCodecContext *ctx,AVFrame *frame,AVPacket *pkt,F
             fprintf(stderr,"wrong encode audio frame");
             return -2;
         }
-        fwrite(pkt->data,1,pkt->size,output);//编码后的数据存在packet里
+        fwrite(pkt->data,1,pkt->size,output);//编码后的数据存在packet里，音质有问题！！！
        // pkt->dts;//解码时间：B帧需要在P帧解码后才能解码
         //pkt->pts;//显示时间：在时间上，B帧有可能在P帧前面
         av_packet_unref(pkt);

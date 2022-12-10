@@ -6,7 +6,7 @@
 
 class RecordBuffer {
 public:
-    short **buffer;
+    uint16_t **buffer;
     int index = -1;
 public:
     RecordBuffer(int buffersize);
@@ -14,10 +14,10 @@ public:
     ~RecordBuffer();
 
     //即将录入PCM数据的buffer
-    short *getRecordBuffer();
+    uint16_t *getRecordBuffer();
 
     //当前录制好的PCM数据的buffer,可以写入文件
-    short *getNowBuffer();
+    uint16_t *getNowBuffer();
 };
 
 #endif //FFMPEG4ANDROID_RECORD_BUFFER_H

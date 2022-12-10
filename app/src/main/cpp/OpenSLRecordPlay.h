@@ -2,8 +2,8 @@
 // Created by bytedance on 8/26/22.
 //
 #include <string>
-#include "../../../../../../SDKandNDK/android-ndk-r21b/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/SLES/OpenSLES.h"
 #include "record_buffer.h"
+#include "AudioEncode.h"
 
 
 class OpenSLRecordPlay{
@@ -33,7 +33,7 @@ private:
     //混音器
     SLObjectItf outputMixObject = 0;
     //录制器
-    SLObjectItf bqRecoderObject = 0;//object 录制对象
+    SLObjectItf bqRecoderObject = 0;//object 录制对象，所有的对象都可抽象为SLObjectIft
     //播放器
     SLObjectItf bqPlayerObject = 0;
 
@@ -48,4 +48,8 @@ public:
     FILE *pcmFile;
 
     bool finished;
+
+    //编码部分
+    AudioEncode *audioEncode;
+    uint16_t  * encodeData;
 };
