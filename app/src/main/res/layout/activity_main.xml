@@ -1,27 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/sample_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:id="@+id/relativeLayout1"
+
+    android:layout_width="fill_parent"
+
+    android:layout_height="fill_parent" >
+
+    <com.example.ffmpegtest.CameraRender
+        android:id="@+id/cameraView"
+
+        android:layout_width="fill_parent"
+
+        android:layout_height="fill_parent" />
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="startRecord"
-        android:id="@+id/btnstartRecord"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:id="@+id/audioRecordBt"
+
+        android:layout_width="wrap_content"
+
+        android:layout_height="wrap_content"
+
+        android:layout_alignParentRight="true"
+
+        android:layout_alignParentBottom="true"
+
+        android:text="音频录制"
+
+        android:onClick="nextBt" />
+
+    <Button
+
+        android:id="@+id/cameraPreviewBt"
+
+        android:layout_width="wrap_content"
+
+        android:layout_height="wrap_content"
+
+
+        android:layout_alignParentBottom="true"
+
+        android:text="相机预览"
+
+        android:onClick="preBt" />
+
+</RelativeLayout>

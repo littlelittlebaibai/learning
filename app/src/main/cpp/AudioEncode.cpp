@@ -160,7 +160,7 @@ int AudioEncode::initEncoder() {
 int AudioEncode::sendSamples(uint16_t  * samples_) {
     int ret = av_frame_make_writable(frame);//frame没有初始化
    // fwrite(samples_,1,4096,tmp1);
-    memcpy(frame->data[0],samples_,4096);
+    memcpy(frame->data[0],(uint8_t*)samples_,4096);//音质问题，为什么直接赋值会导致静音问题
   //  fwrite(frame->data[0],1,4096,tmp);
     encodeFrames(c,frame,pkt,f);
 

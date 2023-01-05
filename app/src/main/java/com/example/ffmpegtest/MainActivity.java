@@ -8,9 +8,11 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import java.io.File;
-
+//创建显示预览页面的surface
 public class MainActivity extends AppCompatActivity {
     private Button btnStartRecord=null;
+    private Button btnCameraPreview = null;
+    private CameraRender cameraRender = null;
 
     // Used to load the 'native-lib' library on application startup.
     static {
@@ -21,12 +23,25 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        cameraRender = findViewById(R.id.cameraView);
+                //new CameraRender(this);
+        btnCameraPreview = findViewById(R.id.cameraPreviewBt);
+        btnCameraPreview.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                cameraRender.startCameraPreview();
+            }
+        });
+
+
+
 
         // Example of a call to a native method
-        TextView tv = findViewById(R.id.sample_text);
-        tv.setText(stringFromJNI());
+//        TextView tv = findViewById(R.id.sample_text);
+//        tv.setText(stringFromJNI());
+        //cameraRender = findViewById(R.id.surfaceView)
 
-        btnStartRecord = findViewById(R.id.btnstartRecord);
+        btnStartRecord = findViewById(R.id.audioRecordBt);
         btnStartRecord.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

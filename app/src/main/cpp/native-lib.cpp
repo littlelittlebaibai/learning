@@ -3,11 +3,15 @@
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 #include "OpenSLRecordPlay.h"
+#include "CameraPreview.h"
+#include <android/native_window.h>
+#include <android/native_window_jni.h>
 extern "C" {
 #include <libavcodec/avcodec.h>
 
 }
-
+static jobject g_obj = 0;
+CameraPreview *cameraPreview;
 void decode(AVCodecContext *pContext, AVPacket *pPacket, AVFrame *pFrame, FILE *pFile);
 
 
@@ -110,4 +114,26 @@ Java_com_example_ffmpegtest_MainActivity_startRecord(JNIEnv *env, jobject thiz, 
     const char *pcmPath = path == nullptr ? nullptr : env->GetStringUTFChars(path, nullptr);
     OpenSLRecordPlay *openSlRecordPlay = new OpenSLRecordPlay();
     openSlRecordPlay->startRecord(pcmPath);
+}
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_example_ffmpegtest_CameraRender_startPreview(JNIEnv *env, jobject thiz, jobject surface,
+                                                      jint width, jint height) {
+    cameraPreview = new CameraPreview();
+    JavaVM *g_jvm = NULL;
+    env->GetJavaVM(&g_jvm);
+    g_obj = env->NewGlobalRef(thiz);
+    if(surface != 0 && cameraPreview != NULL ){
+        ANativeWindow *window = ANativeWindow_fromSurface(env,surface);
+        cameraPreview->prepareEGLContext(window,g_jvm,g_obj,width,height,0);
+
+    }
+    return 0;
+    // TODO: implement startPreview()
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_ffmpegtest_CameraCapture_notifyFrameAvailable(JNIEnv *env, jobject thiz) {
+    cameraPreview->notifyFrameAvailable();
+    // TODO: implement notifyFrameAvailable()
 }

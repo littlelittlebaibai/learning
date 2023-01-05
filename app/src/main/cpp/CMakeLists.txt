@@ -80,6 +80,7 @@ add_library( # Sets the name of the library.
         OpenSLRecordPlay.cpp
         record_buffer.cpp
         AudioEncode.cpp
+        CameraPreview.cpp
 
         )
 
@@ -98,6 +99,13 @@ target_link_libraries(
         avformat
         avdevice
         OpenSLES
+
+        log
+        android
+        GLESv2
+        EGL
+        z
+
 
         # Links the target library to the log library
         # included in the NDK.
