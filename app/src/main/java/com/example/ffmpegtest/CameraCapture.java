@@ -11,6 +11,7 @@ import java.io.IOException;
 public class CameraCapture {
     private Camera mCamera;
     private SurfaceTexture mSurfaceTexture;
+    private float[] transformMatrix = new float[16];
    public void openCamera(){
 //        mCamera = Camera.open(1);
 //        Camera.Parameters parameters = mCamera.getParameters();
@@ -43,6 +44,7 @@ public class CameraCapture {
        Camera.Parameters parameters = mCamera.getParameters();
        parameters.setPreviewFormat(ImageFormat.NV21);//set source image data
        parameters.setPreviewSize(640, 480);
+
        mCamera.setParameters(parameters);
 
        mSurfaceTexture = new SurfaceTexture(id);
@@ -60,6 +62,7 @@ public class CameraCapture {
 
    public void upDateTexImageFromNative(){
        mSurfaceTexture.updateTexImage();
+       mSurfaceTexture.getTransformMatrix(transformMatrix);//纹理转换矩阵，将该矩阵传递给native，和纹理坐标相乘，得到正确纹理坐标
    }
 //   public void startPreview(){
 //       //创建GL环境，创建好以后通知上册真正开启相机预览，为相机设置surface

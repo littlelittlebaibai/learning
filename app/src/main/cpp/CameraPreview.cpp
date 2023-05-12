@@ -3,13 +3,14 @@
 //
 #include <cstring>
 #include "CameraPreview.h"
+#include <unistd.h>
 //surfaceCreate时调用，考虑surface发生变化，EGL又初始化好了的情况
 int CameraPreview::prepareEGLContext(ANativeWindow *window, JavaVM *g_jvm, jobject obj, int screenWidth,
                                  int screenHeight, int cameraFacingId) {
     this->g_jvm = g_jvm;
     this->obj = obj;
-    this->screenHeight = screenHeight;//surface的宽高
-    this->screenWidth = screenWidth;
+    this->screenHeight = screenHeight;//surface的宽高 2117
+    this->screenWidth = screenWidth;//1080
     this->_window = window;
     pthread_create(&_threadID,0,render_stream,this);
 
@@ -32,6 +33,16 @@ void *CameraPreview::render_stream(void* mySelf){
             cameraPreview->updateTexImage();
             cameraPreview->drawFrame();
             cameraPreview->frameAvailable = false;
+            if(cameraPreview->isRecord){
+                if(!cameraPreview->isEncodeInit){
+                    cameraPreview->mVideEncode = new VideoEncode(cameraPreview->screenHeight,cameraPreview->screenWidth);
+                    cameraPreview->mVideEncode->initEncoder();
+                    cameraPreview->isEncodeInit = true;
+                    cameraPreview->mVideEncode->sendFrames(NULL);//
+                }
+                uint8_t *image = cameraPreview->copyImageFromImage();//耗时，是否会阻塞预览
+
+            }
         }
 
     }
@@ -177,14 +188,18 @@ int CameraPreview::processFrame(){
 }
 
 int CameraPreview::drawFrame() {
-    glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+    //glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
     //决定视区所见区域(0,0)窗口左下角位置，screenWidth,screenHeight窗口的宽和高
     glViewport(0,0,screenWidth,screenHeight);
     //intall a program object as part of current render state
     glUseProgram(programID);
 
-    static const GLfloat _vertices[] = { -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f,
-                                         1.0f, 1.0f };
+    //绘图坐标可认为是往surface的哪个地方绘制，默认surface的大小是1X1的
+    //因此坐标的具体值需要根据surface的宽高和camera帧的宽高去计算
+    //surface(1080X2117) camera(640X480) x=1,y=(1080/640*480)/1080
+    //此外，要注意绘图坐标和纹理坐标的对应关系，将纹理坐标对应的点根据surface的坐标绘制到surface上去
+    static const GLfloat _vertices[] = { 1.0f, 0.7f, 1.0f, -0.7f, -1.0f, 0.7f,
+                                         -1.0f, -0.7f };
     //绘图坐标，给vPosition所代表的变量传值
     glVertexAttribPointer(mGLVertexCoords, 2, GL_FLOAT, 0, 0, _vertices);
     //enable or disable a verex attribute array
@@ -228,4 +243,27 @@ void CameraPreview::matrixSetIdentityM(float *m)
     memset((void*)m, 0, 16*sizeof(float));//screenHeight,screenWidth
     m[0] = m[5] = m[10] = m[15] = 1.0f;
 }
+
+void CameraPreview::startRecord() {
+    isRecord = true;
+}
+
+uint8_t* CameraPreview::copyImageFromImage() {
+    const int dataLength = 640 * 480 * 4 ;
+    char* pixelData = new char[dataLength];
+    //uint8_t *image = new uint8_t [screenWidth*screenWidth*4];
+    glReadPixels(0,0,480,640,GL_RGBA, GL_UNSIGNED_BYTE,pixelData);//宽高不对，read出来的数据不对，按照surface大小尝试
+    //dump pixeldata
+    FILE* fp = fopen("/sdcard/Android/data/com.example.ffmpegtest/files/dumpimage","wb+");
+    if(fp == nullptr)
+        return nullptr;
+    fwrite(pixelData,640 * 480 * 4,1,fp);
+
+    return reinterpret_cast<uint8_t *>(pixelData);
+
+//    int pixelSize = screenWidth*screenWidth
+//    byte *packetBuffer = new byte[pixelSize];
+}
+
+
 

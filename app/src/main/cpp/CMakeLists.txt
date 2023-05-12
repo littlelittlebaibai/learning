@@ -81,6 +81,7 @@ add_library( # Sets the name of the library.
         record_buffer.cpp
         AudioEncode.cpp
         CameraPreview.cpp
+        VideoEncode.cpp
 
         )
 

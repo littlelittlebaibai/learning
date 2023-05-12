@@ -137,3 +137,9 @@ Java_com_example_ffmpegtest_CameraCapture_notifyFrameAvailable(JNIEnv *env, jobj
     cameraPreview->notifyFrameAvailable();
     // TODO: implement notifyFrameAvailable()
 }
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_ffmpegtest_CameraRender_startRecord(JNIEnv *env, jobject thiz) {
+    // TODO: implement startRecord()
+    cameraPreview->startRecord();
+}

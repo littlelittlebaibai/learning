@@ -69,5 +69,5 @@ public class CameraRender extends SurfaceView implements SurfaceHolder.Callback 
         mCameraCapture.upDateTexImageFromNative();
     }
     public native int startPreview(Surface surface,int width, int height);
-
+    public native void startRecord();
 }

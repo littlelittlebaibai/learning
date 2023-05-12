@@ -31,6 +31,25 @@
 
         android:onClick="nextBt" />
 
+
+    <Button
+
+        android:id="@+id/vidoeRecordBt"
+
+        android:layout_width="wrap_content"
+
+        android:layout_height="wrap_content"
+
+        android:layout_alignParentRight="true"
+
+        android:layout_alignParentBottom="true"
+
+        android:layout_marginRight="148dp"
+
+        android:layout_marginBottom="2dp"
+        android:onClick="nextBt"
+        android:text="视频录制" />
+
     <Button
 
         android:id="@+id/cameraPreviewBt"
@@ -42,8 +61,8 @@
 
         android:layout_alignParentBottom="true"
 
-        android:text="相机预览"
+        android:onClick="preBt"
 
-        android:onClick="preBt" />
+        android:text="相机预览" />
 
 </RelativeLayout>

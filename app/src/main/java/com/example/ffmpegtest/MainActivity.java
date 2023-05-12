@@ -12,6 +12,7 @@ import java.io.File;
 public class MainActivity extends AppCompatActivity {
     private Button btnStartRecord=null;
     private Button btnCameraPreview = null;
+    private Button btnVideRecord = null;
     private CameraRender cameraRender = null;
 
     // Used to load the 'native-lib' library on application startup.
@@ -49,6 +50,14 @@ public class MainActivity extends AppCompatActivity {
 
                 startRecord(outFile.getAbsolutePath());
 
+            }
+        });
+
+        btnVideRecord = findViewById(R.id.vidoeRecordBt);
+        btnVideRecord.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cameraRender.startRecord();
             }
         });
     }

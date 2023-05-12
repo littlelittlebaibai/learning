@@ -13,6 +13,7 @@
 #include <EGL/eglext.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include "VideoEncode.h"
 
 static char* GPU_FRAME_VERTEX_SHADER =
         "attribute vec4 vPosition;\n"
@@ -32,12 +33,16 @@ static char* GPU_FRAME_FRAGMENT_SHADER =
         "uniform samplerExternalOES yuvTexSampler;\n"
         "varying vec2 yuvTexCoords;\n"
         "void main() {\n"
-        "  gl_FragColor = texture2D(yuvTexSampler, yuvTexCoords);\n"
+        " vec4 rgba = texture2D(yuvTexSampler, yuvTexCoords);\n"
+        "float gray = (0.30 * rgba.r   + 0.59 * rgba.g + 0.11* rgba.b);\n"
+        "gl_FragColor = vec4(rgba.r, rgba.g, rgba.b, 1.0);\n"
         //textture2D:纹理采样器，获取纹理上指定位置的颜色值，会读入纹理上特定坐标处的颜色值，读给谁？
         //yuvTexSampler:oes纹理
         //yuvTexCoords:纹理顶点数据，纹理坐标
         "}\n";
-
+//vec4 rgba =texture2D(vTexture, aCoord);
+//    float gray = (0.30 * rgba.r   + 0.59 * rgba.g + 0.11* rgba.b);
+//    gl_FragColor = vec4(gray, gray, gray, 1.0);
 
 class CameraPreview{
 public:
@@ -95,4 +100,11 @@ public:
 
 
     void matrixSetIdentityM(float *m);
+
+    //record
+    bool isRecord = false;
+    bool isEncodeInit = false;
+    VideoEncode *mVideEncode = nullptr;
+    uint8_t* copyImageFromImage();
+    void startRecord();
 };
