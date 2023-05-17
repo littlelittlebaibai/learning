@@ -72,21 +72,34 @@ int VideoEncode::initEncoder(){
         return -6;
     }
     //开启编码线程
-    pthread_create(&mEncodeThreadID,0,encode_frame,this);
+   // pthread_create(&mEncodeThreadID,0,encode_frame,this);
     return 0;
 
 }
 
 int VideoEncode::sendFrames(uint8_t* frame_) {
     //===================
+
+    c->bit_rate = 400000;//这个比特率参数是用来干啥的？？？可以理解为视频编码的采样率，码率不够的时候会导致原始的一帧图像像素数不够，应使用重采样解决，重采样又会导致画质下降，编解码器如何重采样？？？
+    c->width = encodeWidth;
+    c->height = encodeHeight;//和渲染帧保持一致
+    c->time_base = (AVRational){1,25};//???
+    c->framerate = (AVRational){25,1};//???
+    c->gop_size = 10;
+    c->max_b_frames =1;
+    c->pix_fmt = AV_PIX_FMT_YUV420P;//???格式不匹配导致编码有问题？
+    c->codec_type = AVMEDIA_TYPE_VIDEO;
+    c->codec = codec;
+
+
     for(i=0;i<25;i++){
-        isGetNewFrame = false;
+       // isGetNewFrame = false;
         fflush(f);
         ret = av_frame_make_writable(frame);
         if(ret<0)
             return -7;
         for(y=0;y<c->height;y++){
-            for(x=0;x<c->width;c++){
+            for(x=0;x<c->width;x++){
                 frame->data[0][y*frame->linesize[0]+x] = x+y+i+3;
             }
         }
@@ -98,7 +111,7 @@ int VideoEncode::sendFrames(uint8_t* frame_) {
             }
         }
         frame->pts = i;
-        encodeFrames(c,frame,pkt);
+        encodeFrames(c,frame,pkt);//c有问题
     }
 
     //===================
@@ -130,9 +143,9 @@ void *VideoEncode::encode_frame(void *myself){
 }
 int VideoEncode::encodeFrames(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt) {
     //7.给编码器送入原始数据
-    frame->pts = frameNum*30;
+    //frame->pts = frameNum*30;
     frameNum++;
-    ret = avcodec_send_frame(enc_ctx,frame);
+    ret = avcodec_send_frame(enc_ctx,frame);//-22
     if(ret<0){
         return -1;
     }

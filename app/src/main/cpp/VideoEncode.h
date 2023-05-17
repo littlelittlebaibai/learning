@@ -33,7 +33,7 @@ public:
     int frameNum = 0;
 
     //编码文件
-    const char *filename = "/sdcard/Android/data/com.example.ffmpegtest/files/afterVideoencode.mp4";
+    const char *filename = "/data/data/com.example.ffmpegtest/cache/afterVideoencode.mp4";
     FILE *f;
 
 
