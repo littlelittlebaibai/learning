@@ -22,7 +22,7 @@ VideoEncode::~VideoEncode(){
 int VideoEncode::initEncoder(){
     //1.查找编码器
    // codec = avcodec_find_decoder_by_name("ff_libx264_encoder");//
-    codec = avcodec_find_encoder(AV_CODEC_ID_MPEG4);
+    codec = avcodec_find_encoder(AV_CODEC_ID_MPEG1VIDEO);
     if(!codec){
         return -1;
     }
@@ -90,9 +90,10 @@ int VideoEncode::sendFrames(uint8_t* frame_) {
     c->pix_fmt = AV_PIX_FMT_YUV420P;//???格式不匹配导致编码有问题？
     c->codec_type = AVMEDIA_TYPE_VIDEO;
     c->codec = codec;
+    av_opt_set(c->priv_data, "tune", "zerolatency", 0);
 
 
-    for(i=0;i<25;i++){
+    for(i=0;i<500;i++){
        // isGetNewFrame = false;
         fflush(f);
         ret = av_frame_make_writable(frame);
@@ -100,7 +101,7 @@ int VideoEncode::sendFrames(uint8_t* frame_) {
             return -7;
         for(y=0;y<c->height;y++){
             for(x=0;x<c->width;x++){
-                frame->data[0][y*frame->linesize[0]+x] = x+y+i+3;
+                frame->data[0][y*frame->linesize[0]+x] = x+y+i*3;
             }
         }
 
@@ -110,9 +111,18 @@ int VideoEncode::sendFrames(uint8_t* frame_) {
                 frame->data[2][y*frame->linesize[2]+x] = 64+y+i*5;
             }
         }
-        frame->pts = i;
+        frame->pts = i*33;
         encodeFrames(c,frame,pkt);//c有问题
     }
+    encodeFrames(c,NULL,pkt);
+    if(codec->id ==AV_CODEC_ID_MPEG1VIDEO || codec->id == AV_CODEC_ID_MPEG2VIDEO){
+        uint8_t encode[] = {0,0,1,0xb7};
+        fwrite(encode,1,sizeof(encode),f);
+    }
+    fclose(f);
+    avcodec_free_context(&c);
+    av_frame_free(&frame);
+    av_packet_free(&pkt);
 
     //===================
 //    ret = av_frame_make_writable(frame);
@@ -158,6 +168,7 @@ int VideoEncode::encodeFrames(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket 
             return -3;
         }
         fwrite(pkt->data,1,pkt->size,f);
+        av_packet_unref(pkt);
 
     }
     return 0;
